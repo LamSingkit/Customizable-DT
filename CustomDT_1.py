@@ -179,33 +179,12 @@ def display_tree(node, prefix="", is_left=None):
     if node.right:
         display_tree(node.right, new_prefix, False)
 
-## Compile Toy Data
-data2 = pd.DataFrame({
-    'X1': np.random.randint(1, 11, 100),        # Integer values 1-10
-    'X2': np.random.normal(50, 15, 100),        # Normal distribution (μ=50, σ=15)
-    'X3': np.random.exponential(2, 100),        # Exponential distribution
-    'X4': np.random.uniform(0, 100, 100),       # Uniform distribution 0-100
-    'X5': np.abs(np.random.randn(100) * 10),    # Right-skewed positive values
-    'X6': np.random.choice(['A', 'B', 'C', 'D'], 100)  # Categorical feature
-})
+# Load data from CSV files
+data2 = pd.read_csv('toy_data.csv')
+y2 = pd.read_csv('toy_target.csv').iloc[:, 0]  # Get first column as series
 
-# Create target using only numerical features
-y2 = pd.Series(np.where(
-    ((data2['X1'] > 5) & (data2['X2'] < 60)) |    # Rule 1
-    ((data2['X3'] > 2.5) & (data2['X4'] < 40)) |  # Rule 2
-    (data2['X5'] > 8),                            # New rule replacing X6 dependency
-    1, 0
-))
-
-# Add 15% noise to target
-noise_mask = np.random.choice([True, False], 100, p=[0.15, 0.85])
-y2[noise_mask] = 1 - y2[noise_mask]
-
-# Reset index
-data2 = data2.reset_index(drop=True)
-y2 = y2.reset_index(drop=True)
-
+print(y2.mean())
 
 encoding_map = mean_encode(data2, y2)
-tree = build_tree(data2, y2, split_criterion = 'Gini', max_depth=None)
+tree = build_tree(data2, y2, split_criterion = 'Gini', max_depth=3)
 display_tree(tree)
