@@ -97,18 +97,24 @@ def best_split(data, y, split_criterion='Gini'):
 def build_tree(data, y, split_criterion, depth=0, max_depth=None, node_feature = None, node_threshold = None):
     if len(set(y)) == 1 or len(y) == 0:
         # Return a leaf node if all target values are the same or no data is left
-        return TreeNode(feature=node_feature, threshold=node_threshold, leaf_value=y.mode()[0] if len(y) != 0 else None)
+        count = len(y)
+        avg = y.mean() if len(y) != 0 else None
+        return TreeNode(feature=node_feature, threshold=node_threshold, count=count, avg=avg, leaf_value=y.mode()[0] if len(y) != 0 else None)
 
     if max_depth is not None and depth >= max_depth:
         # Return a leaf node if the maximum depth is reached
-        return TreeNode(feature=node_feature, threshold=node_threshold, leaf_value=y.mode()[0])
+        count = len(y)
+        avg = y.mean()
+        return TreeNode(feature=node_feature, threshold=node_threshold, count=count, avg=avg, leaf_value=y.mode()[0])
 
     # Find the best split
     feature, threshold, _ = best_split(data, y, split_criterion)
 
     if feature is None:
         # Return a leaf node if no valid split is found
-        return TreeNode(feature=node_feature, threshold=node_threshold, leaf_value=y.mode()[0])
+        count = len(y)
+        avg = y.mean()
+        return TreeNode(feature=node_feature, threshold=node_threshold, count=count, avg=avg, leaf_value=y.mode()[0])
 
     # Calculate count and avg
     count = len(y)
@@ -142,15 +148,15 @@ def display_tree(node, prefix="", is_left=None):
             if is_left:
                 branch = "├── "
                 if isinstance(node.threshold, (np.ndarray)):
-                    print(f"{prefix}{branch}{node.feature} in {node.threshold} Predict {node.leaf_value}")
+                    print(f"{prefix}{branch}{node.feature} in {node.threshold} Predict {node.leaf_value}, Count:{node.count}, Avg: {node.avg*100:.1f}%")
                 else:
-                    print(f"{prefix}{branch}{node.feature} <= {node.threshold:.2f} Predict {node.leaf_value}")
+                    print(f"{prefix}{branch}{node.feature} <= {node.threshold:.2f} Predict {node.leaf_value}, Count:{node.count}, Avg: {node.avg*100:.1f}%")
             else:
                 branch = "└── "
                 if isinstance(node.threshold, (np.ndarray)):
-                    print(f"{prefix}{branch}{node.feature} in {node.threshold} Predict {node.leaf_value}")
+                    print(f"{prefix}{branch}{node.feature} in {node.threshold} Predict {node.leaf_value}, Count:{node.count}, Avg: {node.avg*100:.1f}%")
                 else:
-                    print(f"{prefix}{branch}{node.feature} > {node.threshold:.2f} Predict {node.leaf_value}")
+                    print(f"{prefix}{branch}{node.feature} > {node.threshold:.2f} Predict {node.leaf_value}, Count:{node.count}, Avg: {node.avg*100:.1f}%")
         return
 
     if is_left is None:
